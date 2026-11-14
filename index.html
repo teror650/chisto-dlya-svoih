@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чисто для своих</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#b51f25">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<style>
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:#111;color:#f4f4f4;font:16px system-ui,sans-serif}
+main{max-width:650px;margin:auto}
+h1{margin:0;color:#ff3434;font-size:34px}
+p{color:#bbb;line-height:1.45}
+.tabs{display:flex;gap:8px;margin:20px 0 8px}
+button{padding:12px 16px;border:0;border-radius:10px;background:#444;color:white;font-weight:700;font-size:15px}
+.tabs button{flex:1}
+button.active,.action{background:#d92727}
+label{display:block;margin:18px 0 8px;font-weight:650}
+textarea{width:100%;min-height:125px;padding:14px;border:1px solid #555;border-radius:12px;background:#202020;color:white;font:18px system-ui;resize:vertical}
+.output{background:#191919;border-color:#b52a2a}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+small{color:#aaa;display:block;margin-top:16px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+<h1>КОД-26</h1>
+<p>Офлайн-переводчик по вашей таблице. Выбери, что нужно сделать:</p>
+<div class="tabs">
+ <button id="enc" class="active" type="button">Зашифровать</button>
+ <button id="dec" type="button">Расшифровать</button>
+</div>
+<label id="inputLabel" for="source">Обычный текст</label>
+<textarea id="source" placeholder="Напиши текст здесь…"></textarea>
+<label id="outputLabel" for="result">Зашифрованный текст</label>
+<textarea id="result" class="output" readonly placeholder="Результат появится здесь"></textarea>
+<div class="actions">
+ <button id="copy" class="action" type="button">Копировать результат</button>
+ <button id="clear" type="button">Очистить</button>
+</div>
+<small>Пробелы, цифры и знаки препинания сохраняются. Используется таблица «Код-26»: И → Ъ. Шифр простой и не предназначен для защиты действительно важных секретов.</small>
+</main>
+<script>
+const plain = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+const coded = "ФЦШЫКЮЧЭМЪПЯДХВСТАНЕОБГИЖЗЛУРЁЙЩЬ";
+const encMap = Object.fromEntries([...plain].map((c,i)=>[c,coded[i]]));
+const decMap = Object.fromEntries([...coded].map((c,i)=>[c,plain[i]]));
+let mode = "enc";
+const source = document.getElementById("source");
+const result = document.getElementById("result");
+function convert(){
+ const map = mode === "enc" ? encMap : decMap;
+ result.value = [...source.value.toUpperCase()].map(c=>map[c] || c).join("");
+}
+function setMode(next){
+ mode = next;
+ document.getElementById("enc").classList.toggle("active",mode==="enc");
+ document.getElementById("dec").classList.toggle("active",mode==="dec");
+ document.getElementById("inputLabel").textContent = mode==="enc" ? "Обычный текст" : "Зашифрованный текст";
+ document.getElementById("outputLabel").textContent = mode==="enc" ? "Зашифрованный текст" : "Расшифрованный текст";
+ source.placeholder = mode==="enc" ? "Напиши обычный текст…" : "Вставь текст из шифра…";
+ result.placeholder = mode==="enc" ? "Здесь появится шифр" : "Здесь появится расшифровка";
+ convert();
+}
+source.addEventListener("input",convert);
+document.getElementById("enc").addEventListener("click",()=>setMode("enc"));
+document.getElementById("dec").addEventListener("click",()=>setMode("dec"));
+document.getElementById("copy").addEventListener("click",async()=>{
+ if(!result.value)return;
+ try{await navigator.clipboard.writeText(result.value);}
+ catch(e){result.focus();result.select();document.execCommand("copy");}
+ document.getElementById("copy").textContent="Скопировано!";
+});
+document.getElementById("clear").addEventListener("click",()=>{
+ source.value="";result.value="";
+ document.getElementById("copy").textContent="Копировать результат";
+ source.focus();
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

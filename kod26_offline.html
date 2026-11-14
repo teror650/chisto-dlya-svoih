@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Код-26</title>
+<style>
+:root{color-scheme:dark}
+body{margin:0;padding:20px;background:#111;color:#f4f4f4;font:16px system-ui,sans-serif}
+main{max-width:650px;margin:auto}
+h1{margin:0;color:#ff3434;font-size:34px}
+p{color:#bbb}
+label{display:block;margin:18px 0 8px;font-weight:650}
+textarea{box-sizing:border-box;width:100%;min-height:125px;padding:14px;border:1px solid #555;border-radius:12px;background:#202020;color:white;font:18px system-ui;resize:vertical}
+.output{background:#191919;border-color:#b52a2a}
+button{padding:12px 16px;margin:10px 8px 0 0;border:0;border-radius:10px;background:#d92727;color:white;font-weight:700;font-size:15px}
+button.secondary{background:#444}
+small{color:#aaa;display:block;margin-top:16px;line-height:1.5}
+</style>
+</head>
+<body>
+<main>
+<h1>КОД-26</h1>
+<p>Офлайн-переводчик русского текста в ваш шифр.</p>
+<label for="plain">Обычный текст</label>
+<textarea id="plain" placeholder="Напиши здесь, например: Привет, друг!"></textarea>
+<label for="cipher">Зашифрованный текст</label>
+<textarea id="cipher" class="output" readonly placeholder="Здесь появится шифр"></textarea>
+<button id="copy">Копировать шифр</button>
+<button id="clear" class="secondary">Очистить</button>
+<small>Пробелы, цифры и знаки препинания сохраняются. Используется исходная таблица: И → Ъ. Это простой шифр замены, а не надёжная защита секретной информации.</small>
+</main>
+<script>
+const plain = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+const coded = "ФЦШЫКЮЧЭМЪПЯДХВСТАНЕОБГИЖЗЛУРЁЙЩЬ";
+const map = Object.fromEntries([...plain].map((c,i)=>[c,coded[i]]));
+document.getElementById('plain').addEventListener('input', e=>{
+ const s=e.target.value.toUpperCase();
+ document.getElementById('cipher').value=[...s].map(c=>map[c]||c).join('');
+});
+document.getElementById('copy').addEventListener('click', async ()=>{
+ const out=document.getElementById('cipher');
+ if(!out.value)return;
+ try{await navigator.clipboard.writeText(out.value);document.getElementById('copy').textContent='Скопировано!';}
+ catch(e){out.focus();out.select();document.execCommand('copy');document.getElementById('copy').textContent='Скопировано!';}
+});
+document.getElementById('clear').addEventListener('click',()=>{
+ document.getElementById('plain').value='';
+ document.getElementById('cipher').value='';
+ document.getElementById('copy').textContent='Копировать шифр';
+});
+</script>
+</body>
+</html>
